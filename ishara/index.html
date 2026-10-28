@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>إشارة · مبادرة نود</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@600;700&display=swap">
+<style>
+:root{
+  --bg:#F2F5F4; --panel:#FFFFFF; --ink:#13201E; --muted:#5A6B68; --line:#D9E1DF;
+  --accent:#0F7B6C; --accent-ink:#FFFFFF; --accent-soft:#DDF1ED;
+  --warn:#B26A00; --warn-soft:#FFF1D9; --bad:#B3261E; --bad-soft:#FBE3E1;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",system-ui,"Segoe UI",Tahoma,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0E1615; --panel:#16201F; --ink:#E6EEEC; --muted:#93A5A1; --line:#283533;
+  --accent:#3CC3AE; --accent-ink:#06201C; --accent-soft:#12342F;
+  --warn:#F0B44C; --warn-soft:#352711; --bad:#F2867E; --bad-soft:#3A1816; color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 32px max(16px,env(safe-area-inset-left))}
+.wrap{max-width:1120px;margin:0 auto;display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:10px}
+.logo{display:flex;align-items:baseline;gap:10px}
+.logo h1{font-family:var(--f-display);font-size:42px;line-height:1;margin:0}
+.logo span{color:var(--muted);font-size:14px}
+.by{font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{font:inherit;font-size:15px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 16px;border-radius:999px;cursor:pointer}
+.tab[aria-selected="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button{font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.main{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.stage{position:relative;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:4/3;width:100%}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.stage .overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:20px;color:#fff;background:rgba(10,20,18,.72)}
+.overlay p{margin:0;max-width:34ch}
+.count{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-size:120px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.6);pointer-events:none}
+.btn{border:0;border-radius:8px;padding:11px 18px;font-weight:700;background:var(--accent);color:var(--accent-ink);font-size:16px}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.small{padding:6px 12px;font-size:14px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.result{display:grid;gap:6px}
+.lbl{font-size:13px;color:var(--muted)}
+.word{font-family:var(--f-display);font-size:56px;line-height:1.15;min-height:66px;word-break:break-word}
+.word.none{color:var(--muted);font-size:28px;font-family:var(--f-body)}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s}
+.hold{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:2px}
+.hold i{display:block;height:100%;width:0;background:var(--warn)}
+.sentence{border:1px solid var(--line);border-radius:8px;padding:12px;min-height:58px;font-size:24px;font-weight:600;background:var(--bg);word-break:break-word}
+.sentence:empty::before{content:"الجملة تتكوّن هنا…";color:var(--muted);font-weight:400;font-size:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.set{display:grid;gap:10px;margin-top:4px;font-size:14px}
+.set label{display:flex;gap:8px;align-items:center;justify-content:space-between}
+.set input[type=range]{width:55%}
+.note{font-size:13px;padding:8px 10px;border-radius:6px;background:var(--warn-soft);color:var(--ink);border-inline-start:4px solid var(--warn)}
+.note.ok{background:var(--accent-soft);border-color:var(--accent)}
+.note.bad{background:var(--bad-soft);border-color:var(--bad)}
+.list{display:grid;gap:6px}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.item .em{font-size:24px;width:32px;text-align:center}
+.item b{display:block}
+.item small{color:var(--muted)}
+.chip{font-size:12px;border-radius:999px;padding:2px 8px;background:var(--accent-soft);color:var(--accent);font-weight:700}
+input[type=text]{font:inherit;width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+h2{font-size:17px;margin:0 0 10px}
+.steps{margin:0;padding-inline-start:20px;font-size:14px;color:var(--muted)}
+[hidden]{display:none!important}
+footer{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;border-top:1px solid var(--line);padding-top:10px}
+@media (max-width:860px){.main{grid-template-columns:1fr}.word{font-size:44px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="logo"><h1>إشارة</h1><span>مترجم لغة الإشارة إلى صوت عربي</span></div>
+      <div class="by">مشروع STEM · مبادرة نود</div>
+    </div>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" data-t="translate" aria-selected="true">ترجمة</button>
+      <button class="tab" role="tab" data-t="teach" aria-selected="false">علّمني إشارة</button>
+      <button class="tab" role="tab" data-t="signs" aria-selected="false">الإشارات</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="panel" style="display:grid;gap:12px">
+      <div class="stage" id="stage">
+        <video id="video" playsinline muted autoplay></video>
+        <canvas id="canvas"></canvas>
+        <div class="count" id="count" hidden></div>
+        <div class="overlay" id="overlay">
+          <p id="ovText">الموقع يحتاج الكاميرا عشان يشوف يدك. الصورة ما تطلع من جهازك، كل شي يصير داخل المتصفح.</p>
+          <button class="btn" id="startBtn">ابدأ الكاميرا</button>
+        </div>
+      </div>
+      <div id="status" class="note" hidden></div>
+    </div>
+
+    <div style="display:grid;gap:16px;min-width:0">
+      <!-- translate -->
+      <section class="panel" data-p="translate">
+        <div class="result">
+          <span class="lbl">الإشارة الحالية</span>
+          <div class="word none" id="word">ارفع يدك قدام الكاميرا</div>
+          <div class="bar"><i id="conf"></i></div>
+          <div class="hold" title="ثبّت الإشارة لين يمتلي الخط"><i id="hold"></i></div>
+        </div>
+        <div style="margin-top:14px;display:grid;gap:8px">
+          <span class="lbl">الجملة</span>
+          <div class="sentence" id="sentence"></div>
+          <div class="row">
+            <button class="btn small" id="speakBtn">انطق الجملة</button>
+            <button class="btn ghost small" id="backBtn">احذف آخر كلمة</button>
+            <button class="btn ghost small" id="clearBtn">امسح</button>
+          </div>
+        </div>
+        <div class="set">
+          <label><span>انطق كل كلمة أول ما تتعرّف</span><input type="checkbox" id="autoSpeak" checked></label>
+          <label><span>استخدم الإشارات الجاهزة</span><input type="checkbox" id="builtins" checked></label>
+          <label><span>الدقة المطلوبة</span><input type="range" id="strict" min="0.6" max="2.0" step="0.1" value="1.2"></label>
+        </div>
+      </section>
+
+      <!-- teach -->
+      <section class="panel" data-p="teach" hidden>
+        <h2>علّم «إشارة» إشارة جديدة</h2>
+        <ol class="steps">
+          <li>اكتب معنى الإشارة.</li>
+          <li>اضغط «سجّل»، وبعد العد التنازلي سوّ الإشارة قدام الكاميرا وحرّك يدك شوي.</li>
+          <li>كرّر التسجيل مرتين أو ثلاث من زوايا مختلفة عشان تصير الدقة أعلى.</li>
+        </ol>
+        <div style="display:grid;gap:8px;margin-top:12px">
+          <label for="newLabel" class="lbl">معنى الإشارة</label>
+          <input type="text" id="newLabel" placeholder="مثلًا: ماء" maxlength="40">
+          <div class="row"><button class="btn" id="recBtn">سجّل ٣ ثواني</button><span class="lbl" id="recInfo"></span></div>
+        </div>
+      </section>
+
+      <!-- signs -->
+      <section class="panel" data-p="signs" hidden>
+        <h2>الإشارات المحفوظة</h2>
+        <div class="list" id="customList"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn ghost small" id="exportBtn">نزّل الإشارات (ملف)</button>
+          <label class="btn ghost small" for="importFile" style="display:inline-block">ارفع ملف إشارات</label>
+          <input type="file" id="importFile" accept="application/json,.json" hidden>
+        </div>
+        <h2 style="margin-top:18px">الإشارات الجاهزة</h2>
+        <div class="list" id="builtinList"></div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    <span>إشارة · رائد العتيبي · مبادرة نود</span>
+    <span>يعمل بالكامل داخل المتصفح باستخدام MediaPipe Hands</span>
+  </footer>
+</div>
+
+<script>
+/* ===== Pure logic (no DOM) — exposed on window.IsharaCore for testing ===== */
+(function(){
+  const d = (a,b) => Math.hypot(a.x-b.x, a.y-b.y, (a.z||0)-(b.z||0));
+  const d2 = (a,b) => Math.hypot(a.x-b.x, a.y-b.y);
+  const FINGERS = { index:[5,6,7,8], middle:[9,10,11,12], ring:[13,14,15,16], pinky:[17,18,19,20] };
+
+  // Which fingers are open. Rotation-independent: compares distances from the wrist.
+  function fingerStates(lm){
+    const w = lm[0], palm = d2(lm[0], lm[9]) || 1e-6;
+    const s = {};
+    for (const [name,[mcp,pip,,tip]] of Object.entries(FINGERS)){
+      s[name] = d2(w, lm[tip]) > d2(w, lm[pip]) * 1.12 && d2(lm[tip], lm[mcp]) > palm * 0.45;
+    }
+    // thumb: tip far from the base of the index and from the pinky side
+    s.thumb = d2(lm[4], lm[5]) > palm * 0.55 && d2(lm[4], lm[17]) > d2(lm[3], lm[17]) * 1.05;
+    return s;
+  }
+
+  const BUILTINS = [
+    { id:'hello', emoji:'✋', label:'السلام عليكم', desc:'كل الأصابع مفتوحة' },
+    { id:'yes',   emoji:'👍', label:'نعم',          desc:'الإبهام لفوق والباقي مقفول' },
+    { id:'no',    emoji:'👎', label:'لا',           desc:'الإبهام لتحت والباقي مقفول' },
+    { id:'thanks',emoji:'✌️', label:'شكرًا',        desc:'السبابة والوسطى مفتوحة' },
+    { id:'me',    emoji:'☝️', label:'أنا',          desc:'السبابة بس' },
+    { id:'love',  emoji:'🤟', label:'أحبك',         desc:'الإبهام والسبابة والخنصر' },
+    { id:'help',  emoji:'✊', label:'ساعدني',       desc:'قبضة مقفولة' }
+  ];
+
+  function builtinGesture(lm){
+    const s = fingerStates(lm);
+    const open = ['index','middle','ring','pinky'].filter(f=>s[f]);
+    const n = open.length;
+    const palm = d2(lm[0], lm[9]);
+    if (n===4 && s.thumb) return 'hello';
+    if (n===0 && s.thumb){
+      const dy = lm[4].y - lm[2].y;               // image y grows downward
+      if (dy < -palm*0.35) return 'yes';
+      if (dy >  palm*0.35) return 'no';
+      return null;
+    }
+    if (n===0 && !s.thumb) return 'help';
+    if (n===2 && s.index && s.middle && !s.thumb) return 'thanks';
+    if (n===1 && s.index && !s.thumb) return 'me';
+    if (n===2 && s.index && s.pinky && s.thumb) return 'love';
+    return null;
+  }
+
+  // Position/size invariant feature vector; left hands mirrored onto right.
+  function features(lm, handed){
+    const w = lm[0], scale = d(lm[0], lm[9]) || 1e-6;
+    const flip = handed === 'Left' ? -1 : 1;
+    const f = [];
+    for (const p of lm){ f.push(flip*(p.x-w.x)/scale, (p.y-w.y)/scale, 0.5*((p.z||0)-(w.z||0))/scale); }
+    // fingertip-to-fingertip distances add shape detail
+    const tips=[4,8,12,16,20];
+    for (let i=0;i<tips.length;i++) for (let j=i+1;j<tips.length;j++) f.push(d(lm[tips[i]], lm[tips[j]])/scale);
+    return f;
+  }
+
+  function dist(a,b){ let s=0; for(let i=0;i<a.length;i++){ const t=a[i]-b[i]; s+=t*t; } return Math.sqrt(s); }
+
+  // k-nearest neighbours over saved samples. Returns {label, conf, nearest}.
+  function knn(f, signs, k=5, maxDist=1.2){
+    const all=[];
+    for (const s of signs) for (const smp of s.samples) all.push({label:s.label, dd:dist(f,smp)});
+    if (!all.length) return null;
+    all.sort((a,b)=>a.dd-b.dd);
+    const top = all.slice(0, Math.min(k, all.length));
+    if (top[0].dd > maxDist) return {label:null, conf:0, nearest:top[0].dd};
+    const votes={}; for (const t of top) votes[t.label]=(votes[t.label]||0)+1/(t.dd+0.05);
+    const tot = Object.values(votes).reduce((a,b)=>a+b,0);
+    const best = Object.entries(votes).sort((a,b)=>b[1]-a[1])[0];
+    const closeness = Math.max(0, 1 - top[0].dd/maxDist);
+    return {label:best[0], conf: (best[1]/tot)*0.6 + closeness*0.4, nearest:top[0].dd};
+  }
+
+  // Accepts a word only after it is held steady, and not twice in a row without a pause.
+  function makeStabilizer(need=10, win=14){
+    let buf=[], last=null, gap=0;
+    return {
+      push(label){
+        buf.push(label); if (buf.length>win) buf.shift();
+        if (label===null){ gap++; if (gap>=8) last=null; } else gap=0;
+        const counts={}; for (const l of buf) if (l!==null) counts[l]=(counts[l]||0)+1;
+        let top=null, c=0; for (const [l,n] of Object.entries(counts)) if (n>c){top=l;c=n;}
+        const progress = top && top!==last ? Math.min(1, c/need) : 0;
+        if (top && c>=need && top!==last){ last=top; buf=[]; return {accept:top, progress:1}; }
+        return {accept:null, progress, top};
+      },
+      reset(){ buf=[]; last=null; gap=0; }
+    };
+  }
+
+  window.IsharaCore = { fingerStates, builtinGesture, features, knn, makeStabilizer, BUILTINS };
+})();
+</script>
+
+<script type="module">
+const C = window.IsharaCore;
+const $ = id => document.getElementById(id);
+const MP_VER = '0.10.14';
+const MP_BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}`;
+const MODEL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
+const STORE = 'ishara.signs.v1';
+
+const video=$('video'), canvas=$('canvas'), ctx=canvas.getContext('2d');
+let landmarker=null, running=false, lastTime=-1;
+let signs = load();
+let sentence = [];
+let recording=null;
+const stab = C.makeStabilizer();
+
+/* ---------- storage ---------- */
+function load(){ try{ const v=JSON.parse(localStorage.getItem(STORE)||'[]'); return Array.isArray(v)?v:[]; }catch(e){ return []; } }
+function save(){ try{ localStorage.setItem(STORE, JSON.stringify(signs)); }catch(e){ status('ما قدرت أحفظ في المتصفح. نزّل الإشارات كملف عشان ما تضيع.','bad'); } }
+
+/* ---------- ui helpers ---------- */
+function status(msg, kind=''){ const s=$('status'); if(!msg){s.hidden=true;return;} s.hidden=false; s.className='note '+kind; s.textContent=msg; }
+function setWord(text, none=false){ const w=$('word'); w.textContent=text; w.classList.toggle('none', none); }
+function renderSentence(){ $('sentence').textContent = sentence.join(' '); }
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected', x===t));
+  document.querySelectorAll('[data-p]').forEach(p=>p.hidden = p.dataset.p!==t.dataset.t);
+  if (t.dataset.t==='signs') renderLists();
+});
+
+/* ---------- speech ---------- */
+let arVoice=null;
+function pickVoice(){
+  const vs = speechSynthesis.getVoices();
+  arVoice = vs.find(v=>/^ar(-|_)SA/i.test(v.lang)) || vs.find(v=>/^ar/i.test(v.lang)) || null;
+}
+if ('speechSynthesis' in window){ pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function speak(text){
+  if (!('speechSynthesis' in window) || !text) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = arVoice ? arVoice.lang : 'ar-SA'; if (arVoice) u.voice = arVoice; u.rate = 0.95;
+  speechSynthesis.speak(u);
+}
+$('speakBtn').onclick=()=>speak(sentence.join(' '));
+$('backBtn').onclick=()=>{ sentence.pop(); renderSentence(); };
+$('clearBtn').onclick=()=>{ sentence=[]; renderSentence(); stab.reset(); };
+
+/* ---------- camera + model ---------- */
+async function createLandmarker(){
+  if (window.__ISHARA_FAKE) return window.__ISHARA_FAKE;          // test hook
+  const { FilesetResolver, HandLandmarker } = await import(`${MP_BASE}/vision_bundle.mjs`);
+  const fileset = await FilesetResolver.forVisionTasks(`${MP_BASE}/wasm`);
+  const opts = d => ({ baseOptions:{ modelAssetPath:MODEL, delegate:d }, runningMode:'VIDEO', numHands:1,
+    minHandDetectionConfidence:0.6, minHandPresenceConfidence:0.6, minTrackingConfidence:0.5 });
+  try { return await HandLandmarker.createFromOptions(fileset, opts('GPU')); }
+  catch(e){ return await HandLandmarker.createFromOptions(fileset, opts('CPU')); }
+}
+
+$('startBtn').onclick = async () => {
+  const btn=$('startBtn'); btn.disabled=true;
+  if ('speechSynthesis' in window){ const u=new SpeechSynthesisUtterance(' '); u.volume=0; speechSynthesis.speak(u); } // unlock audio on iOS
+  try{
+    $('ovText').textContent='جاري تشغيل الكاميرا…';
+    if (!navigator.mediaDevices?.getUserMedia) throw new Error('nocam');
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:'user', width:{ideal:640}, height:{ideal:480} }, audio:false });
+    video.srcObject = stream; await video.play();
+    $('ovText').textContent='جاري تحميل نموذج اليد (مرة وحدة بس)…';
+    landmarker = await createLandmarker();
+    $('overlay').hidden = true;
+    if (!arVoice && 'speechSynthesis' in window) status('ما لقيت صوت عربي في هذا الجهاز، الكلمات بتنكتب وقد تنطق بلكنة ثانية. على الآيفون والأندرويد غالبًا موجود.');
+    else status('');
+    running = true; requestAnimationFrame(loop);
+  }catch(e){
+    console.error(e);
+    btn.disabled=false;
+    const msg = e && (e.name==='NotAllowedError' || e.name==='SecurityError')
+      ? 'ما سمحت بالكاميرا. اسمح لها من إعدادات المتصفح وجرّب مرة ثانية.'
+      : (e && e.message==='nocam') ? 'المتصفح ما يدعم الكاميرا، أو الموقع مو مفتوح من رابط https.'
+      : 'صار خطأ في تحميل النموذج. تأكد من الإنترنت وجرّب مرة ثانية.';
+    $('ovText').textContent = msg;
+  }
+};
+
+/* ---------- drawing ---------- */
+const LINKS=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+function draw(lm){
+  const W=canvas.width=video.videoWidth||640, H=canvas.height=video.videoHeight||480;
+  ctx.clearRect(0,0,W,H);
+  if (!lm) return;
+  ctx.lineWidth=Math.max(2,W/220); ctx.strokeStyle='rgba(60,195,174,.95)';
+  ctx.beginPath(); for (const [a,b] of LINKS){ ctx.moveTo(lm[a].x*W,lm[a].y*H); ctx.lineTo(lm[b].x*W,lm[b].y*H); } ctx.stroke();
+  ctx.fillStyle='#FFFFFF'; for (const p of lm){ ctx.beginPath(); ctx.arc(p.x*W,p.y*H,Math.max(3,W/160),0,7); ctx.fill(); }
+}
+
+/* ---------- main loop ---------- */
+function classify(lm, handed){
+  const f = C.features(lm, handed);
+  const strict = +$('strict').value;
+  const r = signs.length ? C.knn(f, signs, 5, strict) : null;
+  if (r && r.label && r.conf >= 0.45) return { label:r.label, conf:r.conf, f };
+  if ($('builtins').checked){
+    const g = C.builtinGesture(lm);
+    if (g){ const b = C.BUILTINS.find(x=>x.id===g); return { label:b.label, conf:0.9, f, emoji:b.emoji }; }
+  }
+  return { label:null, conf: r ? r.conf : 0, f };
+}
+
+function loop(){
+  if (!running) return;
+  const t = performance.now();
+  if (video.readyState >= 2 && t !== lastTime){
+    lastTime = t;
+    let res=null; try{ res = landmarker.detectForVideo(video, t); }catch(e){ console.error(e); }
+    const lm = res && res.landmarks && res.landmarks[0];
+    const hands = res && (res.handednesses || res.handedness);
+    const handed = hands && hands[0] && hands[0][0] ? hands[0][0].categoryName : 'Right';
+    draw(lm);
+    if (lm){
+      const c = classify(lm, handed);
+      if (recording){ recordFrame(c.f); }
+      else {
+        $('conf').style.width = Math.round(c.conf*100)+'%';
+        if (c.label) setWord(c.label); else setWord('إشارة غير معروفة', true);
+        const s = stab.push(c.label);
+        $('hold').style.width = Math.round((s.progress||0)*100)+'%';
+        if (s.accept){ sentence.push(s.accept); if (sentence.length>14) sentence.shift(); renderSentence(); if ($('autoSpeak').checked) speak(s.accept); $('hold').style.width='0%'; }
+      }
+    } else {
+      if (!recording){ setWord('ارفع يدك قدام الكاميرا', true); $('conf').style.width='0%'; $('hold').style.width='0%'; stab.push(null); }
+    }
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ---------- teaching ---------- */
+$('recBtn').onclick = async () => {
+  const label = $('newLabel').value.trim();
+  if (!label){ $('recInfo').textContent='اكتب معنى الإشارة أول.'; $('newLabel').focus(); return; }
+  if (!running){ $('recInfo').textContent='شغّل الكاميرا أول.'; return; }
+  $('recBtn').disabled = true;
+  const cnt=$('count'); cnt.hidden=false;
+  for (const n of ['٣','٢','١']){ cnt.textContent=n; await new Promise(r=>setTimeout(r,700)); }
+  cnt.textContent='●';
+  recording = { label, samples:[], until: performance.now()+3000 };
+  $('recInfo').textContent='يسجّل… حرّك يدك شوي';
+};
+function recordFrame(f){
+  recording.samples.push(f);
+  $('recInfo').textContent = `يسجّل… ${recording.samples.length} عينة`;
+  if (performance.now() > recording.until || recording.samples.length >= 90) finishRecording();
+}
+setInterval(()=>{ if (recording && performance.now() > recording.until + 1500) finishRecording(); }, 300);
+function finishRecording(){
+  const r = recording; recording = null; $('count').hidden = true; $('recBtn').disabled = false;
+  if (!r || r.samples.length < 10){ $('recInfo').textContent='ما شفت اليد كفاية. قرّب يدك من الكاميرا وجرّب مرة ثانية.'; return; }
+  // keep every 2nd frame to avoid near-duplicates
+  const keep = r.samples.filter((_,i)=>i%2===0);
+  const ex = signs.find(s=>s.label===r.label);
+  if (ex){ ex.samples.push(...keep); if (ex.samples.length>240) ex.samples = ex.samples.slice(-240); }
+  else signs.push({ label:r.label, samples:keep, created: Date.now() });
+  save(); stab.reset();
+  const total = signs.find(s=>s.label===r.label).samples.length;
+  $('recInfo').textContent = `تم ✓ «${r.label}» فيها الحين ${total} عينة. سجّل مرة ثانية من زاوية مختلفة لدقة أعلى.`;
+}
+
+/* ---------- lists, import/export ---------- */
+function renderLists(){
+  const cl=$('customList'); cl.innerHTML='';
+  if (!signs.length){ cl.innerHTML='<div class="note">ما فيه إشارات محفوظة. روح لـ«علّمني إشارة» وسجّل أول إشارة.</div>'; }
+  for (const s of signs){
+    const el=document.createElement('div'); el.className='item';
+    el.innerHTML=`<span class="em">🖐️</span><div><b></b><small>${s.samples.length} عينة</small></div><button class="btn ghost small">احذف</button>`;
+    el.querySelector('b').textContent = s.label;
+    el.querySelector('button').onclick=()=>{ signs = signs.filter(x=>x!==s); save(); renderLists(); };
+    cl.appendChild(el);
+  }
+  const bl=$('builtinList'); bl.innerHTML='';
+  for (const b of C.BUILTINS){
+    const el=document.createElement('div'); el.className='item';
+    el.innerHTML=`<span class="em">${b.emoji}</span><div><b>${b.label}</b><small>${b.desc}</small></div><span class="chip">جاهزة</span>`;
+    bl.appendChild(el);
+  }
+}
+$('exportBtn').onclick=()=>{
+  const blob = new Blob([JSON.stringify({app:'ishara',v:1,signs},null,0)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ishara-signs.json'; document.body.appendChild(a); a.click(); a.remove();
+};
+$('importFile').onchange=async e=>{
+  const file=e.target.files[0]; if(!file) return;
+  try{
+    const data=JSON.parse(await file.text());
+    const list = Array.isArray(data) ? data : data.signs;
+    if (!Array.isArray(list)) throw 0;
+    let added=0;
+    for (const s of list){
+      if (!s || typeof s.label!=='string' || !Array.isArray(s.samples)) continue;
+      const ex = signs.find(x=>x.label===s.label);
+      if (ex) ex.samples.push(...s.samples); else signs.push({label:s.label, samples:s.samples, created:Date.now()});
+      added++;
+    }
+    save(); renderLists(); status(`تمت إضافة ${added} إشارة من الملف.`, 'ok');
+  }catch(err){ status('الملف مو ملف إشارات صحيح.', 'bad'); }
+  e.target.value='';
+};
+renderLists();
+if (location.protocol==='file:') status('افتح الموقع من رابط (مثل GitHub Pages) عشان الكاميرا تشتغل. فتح الملف مباشرة قد يمنع الكاميرا في بعض المتصفحات.');
+</script>
+</body>
+</html>
