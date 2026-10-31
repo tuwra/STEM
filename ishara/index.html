@@ -90,6 +90,7 @@ input[type=text]{font:inherit;width:100%;padding:10px 12px;border-radius:8px;bor
 .target{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center}
 .target .big{width:150px;height:112px;border-radius:10px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:64px;overflow:hidden;border:1px solid var(--line)}
 .target .big img{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.thumb img.nf,.target .big img.nf{transform:none}
 .target h3{font-family:var(--f-display);font-size:34px;margin:0;line-height:1.2}
 .verdict{font-size:18px;font-weight:700;padding:10px 12px;border-radius:8px;background:var(--bg);text-align:center}
 .verdict.good{background:var(--good-soft);color:var(--good)}
@@ -251,7 +252,7 @@ footer{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-con
 
   <footer>
     <span>إشارة · رائد العتيبي · مبادرة نود</span>
-    <span>يعمل داخل المتصفح: MediaPipe Hands للرؤية، والتعرف على الكلام من المتصفح</span>
+    <span>يعمل داخل المتصفح: MediaPipe Hands للرؤية، والتعرف على الكلام من المتصفح. صور الحروف ونماذجها من RGB Arabic Alphabets Sign Language Dataset (Al-Barham وآخرون، 2023) برخصة CC BY-NC-SA 4.0</span>
   </footer>
 </div>
 
@@ -588,7 +589,7 @@ let learnCat='ready';
 function findSign(label){ return signs.find(s=>s.label===label) || baseSigns.find(s=>s.label===label); }
 function lesson(label){
   const s = findSign(label), b = C.BUILTINS.find(x=>x.label===label);
-  if (s) return {label, desc:s.desc||'', thumb:s.thumb||'', emoji: LETTERS.has(label)?label:'🖐️', hands:s.hands||1, ready:true};
+  if (s) return {label, desc:s.desc||'', thumb:s.thumb||'', base:!!s.base, emoji: LETTERS.has(label)?label:'🖐️', hands:s.hands||1, ready:true};
   if (b) return {label, desc:b.desc, thumb:'', emoji:b.emoji, hands:1, ready:true};
   return {label, desc:'', thumb:'', emoji: LETTERS.has(label)?label:'·', hands:1, ready:false};
 }
@@ -601,7 +602,7 @@ function catItems(id){
   if (id==='letters') return LIB.letters.map(lesson);
   const c = LIB.cats.find(x=>x.id===id); return c ? c.items.map(lesson) : [];
 }
-function pic(l){ return l.thumb ? `<img alt="" src="${l.thumb}">` : esc(l.emoji); }
+function pic(l){ return l.thumb ? `<img alt="" ${l.base?'class="nf"':''} src="${l.thumb}">` : esc(l.emoji); }
 function renderLearn(){
   $('learnPick').hidden=false; $('learnPractice').hidden=true; target=null;
   const cats=[{id:'ready',name:'الجاهزة للتدريب'},{id:'letters',name:'الحروف'},...LIB.cats];
@@ -708,7 +709,7 @@ function wizShow(){
   const w = wiz.list[wiz.i], s = findSign(w);
   $('wizPos').textContent = `${wiz.i+1} من ${wiz.list.length}`;
   $('wizWord').textContent = w;
-  $('wizPic').innerHTML = s && s.thumb ? `<img alt="" src="${s.thumb}">` : esc(LETTERS.has(w)?w:'🖐️');
+  $('wizPic').innerHTML = s && s.thumb ? `<img alt="" ${s.base?'class="nf"':''} src="${s.thumb}">` : esc(LETTERS.has(w)?w:'🖐️');
   $('wizInfo').textContent = s ? `مسجّلة (${s.samples.length} عينة). سجّل مرة ثانية لدقة أعلى، أو تخطّى.` : 'سوّ الإشارة بعد العد التنازلي.';
   $('wizRec').disabled=false;
 }
