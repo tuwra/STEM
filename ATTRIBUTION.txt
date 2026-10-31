@@ -1,0 +1,1 @@
+Images: RGB Arabic Alphabets Sign Language Dataset (Al-Barham et al., 2023), CC BY-NC-SA 4.0. Resized subset used to train Ishara.
