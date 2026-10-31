@@ -146,6 +146,14 @@ footer{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-con
       <!-- TALK -->
       <section class="panel" data-p="talk">
         <h2>🤟 الشخص الأصم يأشّر</h2>
+        <div class="row" role="group" aria-label="نوع الإشارات" style="margin-bottom:8px">
+          <button class="tab" id="modeWords" aria-selected="true" type="button">كلمات</button>
+          <button class="tab" id="modeLetters" aria-selected="false" type="button">تهجئة بالحروف</button>
+        </div>
+        <div id="spellBox" hidden style="margin-bottom:8px">
+          <span class="lbl">الكلمة اللي تتهجّاها (تنضاف للجملة لما تنزّل يدك)</span>
+          <div class="row"><div class="sentence" id="spell" style="flex:1;min-width:0;letter-spacing:2px"></div><button class="btn ghost small" id="spellDone" type="button">انهِ الكلمة</button></div>
+        </div>
         <div class="sentence" id="sentence"></div>
         <div class="row" style="margin-top:8px">
           <button class="btn small" id="sendBtn">انطق وأرسل</button>
@@ -185,7 +193,8 @@ footer{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-con
       <section class="panel" data-p="learn" hidden>
         <h2>تعلّم لغة الإشارة</h2>
         <div id="learnPick">
-          <p class="lbl" style="margin-top:0">اختر إشارة تتعلمها، أو اضغط «اختبرني» ويعطيك إشارة عشوائية.</p>
+          <p class="lbl" style="margin-top:0">اختر قسم وإشارة تتعلمها، أو اضغط «اختبرني» ويعطيك إشارة عشوائية من الإشارات المسجّلة.</p>
+          <div class="quick" id="learnCats" style="margin-bottom:10px"></div>
           <div class="row" style="margin-bottom:10px"><button class="btn" id="quizBtn">اختبرني</button>
             <div class="score"><span>صح <b id="sOk">0</b></span><span>محاولات <b id="sAll">0</b></span></div></div>
           <div class="list" id="learnList"></div>
@@ -212,6 +221,16 @@ footer{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-con
           <label for="newDesc" class="lbl">وصف الحركة (اختياري)</label>
           <input type="text" id="newDesc" placeholder="مثلًا: الإبهام على الشفة وباقي الأصابع مقفولة" maxlength="120">
           <div class="row"><button class="btn" id="recBtn">سجّل ٣ ثواني</button><span class="lbl" id="recInfo"></span></div>
+        </div>
+        <h2 style="margin-top:20px">سجّل مكتبة الكلمات كلها</h2>
+        <p class="lbl" style="margin-top:0">اختر قسم، والموقع يعرض عليك كلماته وحدة وحدة: تسوي الإشارة، ويسجّلها، وينتقل للي بعدها. سجّل مع شخص يعرف لغة الإشارة السعودية عشان تكون الإشارات صحيحة.</p>
+        <div class="row">
+          <select id="wizCat" style="flex:1;min-width:0;font:inherit;padding:9px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)"></select>
+          <button class="btn other" id="wizStart" type="button">ابدأ</button>
+        </div>
+        <div id="wiz" hidden style="display:grid;gap:10px;margin-top:12px">
+          <div class="target"><div class="big" id="wizPic">🖐️</div><div><span class="lbl" id="wizPos"></span><h3 id="wizWord"></h3><p class="lbl" id="wizInfo" style="margin:0"></p></div></div>
+          <div class="row"><button class="btn" id="wizRec" type="button">سجّل</button><button class="btn ghost small" id="wizSkip" type="button">تخطّى</button><button class="btn ghost small" id="wizStop" type="button">وقّف</button></div>
         </div>
       </section>
 
@@ -335,8 +354,34 @@ footer{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;justify-con
 })();
 </script>
 
+<script>
+/* ===== Library: what can be learned. Hand shapes come from recordings or the letters dataset, never guessed. ===== */
+window.IsharaLib = {
+  letters: ['ا','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي','ة','ال','لام ألف'],
+  cats: [
+    {id:'greet', name:'تحيات ومجاملات', items:['السلام عليكم','وعليكم السلام','مرحبًا','أهلًا وسهلًا','صباح الخير','مساء الخير','كيف حالك','بخير','الحمد لله','شكرًا','عفوًا','لو سمحت','آسف','مع السلامة','تشرفنا','إن شاء الله','ما شاء الله','مبروك']},
+    {id:'ask', name:'أسئلة', items:['ماذا','من','أين','متى','كيف','لماذا','كم','هل']},
+    {id:'people', name:'أشخاص وعائلة', items:['أنا','أنت','هو','هي','نحن','أب','أم','أخ','أخت','ابن','بنت','جد','جدة','عائلة','صديق','معلم','طالب','طبيب','رجل','امرأة','طفل','أصم']},
+    {id:'urgent', name:'طوارئ وصحة', items:['ساعدني','طوارئ','إسعاف','شرطة','دفاع مدني','مستشفى','ألم','مريض','دواء','خطر','حريق','ضائع','اتصل']},
+    {id:'food', name:'أكل وشرب', items:['ماء','أكل','جوعان','عطشان','قهوة','شاي','حليب','خبز','تمر','رز','لحم','دجاج','فاكهة','عصير']},
+    {id:'places', name:'أماكن', items:['بيت','مدرسة','مسجد','سوق','مطعم','حمام','غرفة','شارع','سيارة','مكتب','الرياض','مكة','المدينة']},
+    {id:'time', name:'الوقت والأيام', items:['اليوم','أمس','بكرة','الآن','صباح','مساء','ليل','ساعة','دقيقة','أسبوع','شهر','سنة','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت']},
+    {id:'num', name:'أرقام', items:['صفر','واحد','اثنين','ثلاثة','أربعة','خمسة','ستة','سبعة','ثمانية','تسعة','عشرة']},
+    {id:'color', name:'ألوان', items:['أحمر','أزرق','أخضر','أصفر','أبيض','أسود']},
+    {id:'school', name:'المدرسة', items:['كتاب','قلم','دفتر','درس','اختبار','سؤال','جواب','فهمت','ما فهمت','أعد','اكتب','اقرأ']},
+    {id:'feel', name:'مشاعر', items:['سعيد','حزين','غاضب','خائف','تعبان','أحبك','مشتاق']},
+    {id:'verb', name:'أفعال', items:['أذهب','أجي','آكل','أشرب','أنام','أشتغل','أدرس','ألعب','أبغى','أحتاج','أعرف','أنتظر','أساعد']},
+    {id:'adj', name:'كلمات عامة', items:['نعم','لا','كبير','صغير','زين','سيئ','كثير','قليل','جديد','قديم','حار','بارد','سهل','صعب']}
+  ]
+};
+</script>
+
 <script type="module">
 const C = window.IsharaCore;
+const LIB = window.IsharaLib;
+const LETTERS = new Set(LIB.letters);
+let baseSigns = [];   // shipped dataset (letters), read-only
+let mode = 'words';
 const $ = id => document.getElementById(id);
 const MP_VER = '0.10.14';
 const MP_BASE = `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@${MP_VER}`;
@@ -466,11 +511,18 @@ function draw(hands){
 }
 
 /* ---------- classify ---------- */
-function classify(hands){
+function poolFor(m){
+  const all = [...signs, ...baseSigns.filter(b=>!signs.some(s=>s.label===b.label))];
+  if (m==='letters') return all.filter(s=>LETTERS.has(s.label));
+  if (m==='words') return all.filter(s=>!LETTERS.has(s.label));
+  return all;
+}
+function classify(hands, m=mode){
   const f = C.features(hands);
-  const r = signs.length ? C.knn(f, signs, 5, +$('strict').value) : null;
+  const pool = poolFor(m);
+  const r = pool.length ? C.knn(f, pool, 5, +$('strict').value) : null;
   if (r && r.label && r.conf >= 0.45) return { label:r.label, conf:r.conf, f };
-  if ($('builtins').checked && hands.length===1){
+  if (m!=='letters' && $('builtins').checked && hands.length===1){
     const g = C.builtinGesture(hands[0].lm);
     if (g){ const b = C.BUILTINS.find(x=>x.id===g); return { label:b.label, conf:0.9, f }; }
   }
@@ -489,11 +541,14 @@ function loop(){
     draw(hands);
     $('handsTag').textContent = (hands.length===2?'🙌 ':'✋ ')+hands.length;
     if (hands.length){
-      const c = classify(hands);
+      noHand = 0;
+      const c = classify(hands, tab==='learn' && target ? (LETTERS.has(target.label)?'letters':'words') : mode);
       if (recording) recordFrame(c.f);
       else if (tab==='learn') practiceFrame(c);
       else onTalk(c);
     } else if (!recording){
+      noHand++;
+      if (noHand===45 && spell) commitSpell();
       if (tab==='learn') practiceFrame(null);
       else { setWord('ارفع يدك قدام الكاميرا', true); $('conf').style.width='0%'; $('hold').style.width='0%'; stab.push(null); }
     }
@@ -507,31 +562,65 @@ function onTalk(c){
   const s = stab.push(c.label);
   $('hold').style.width = Math.round((s.progress||0)*100)+'%';
   if (s.accept){
-    sentence.push(s.accept); if (sentence.length>14) sentence.shift(); renderSentence();
-    if ($('autoSpeak').checked) speak(s.accept);
+    if (mode==='letters'){ spell += s.accept; $('spell').textContent = spell; }
+    else { sentence.push(s.accept); if (sentence.length>14) sentence.shift(); renderSentence(); if ($('autoSpeak').checked) speak(s.accept); }
     $('hold').style.width='0%';
   }
 }
 
+/* ---------- spelling ---------- */
+let spell='', noHand=0;
+function commitSpell(){ if (!spell) return; sentence.push(spell); renderSentence(); if ($('autoSpeak').checked) speak(spell); spell=''; $('spell').textContent=''; }
+$('spellDone').onclick=commitSpell;
+function setMode(m){
+  mode=m; stab.reset();
+  $('modeWords').setAttribute('aria-selected', m==='words'); $('modeLetters').setAttribute('aria-selected', m==='letters');
+  $('spellBox').hidden = m!=='letters';
+  if (m==='letters' && !poolFor('letters').length) status('الحروف تحتاج تدريب أول: سجّلها من «أضف إشارة»، أو انتظر تحديث الموقع بحروف جاهزة.');
+  else status('');
+}
+$('modeWords').onclick=()=>setMode('words');
+$('modeLetters').onclick=()=>{ commitSpell(); setMode('letters'); };
+
 /* ---------- learning ---------- */
 let target=null, hits=0, solved=false, score={ok:0,all:0}, quiz=false;
-function allLessons(){
-  const custom = signs.map(s=>({label:s.label, desc:s.desc||'', thumb:s.thumb||'', emoji:'🖐️', hands:s.hands||1}));
-  const builtin = C.BUILTINS.map(b=>({label:b.label, desc:b.desc, emoji:b.emoji, thumb:'', hands:1}));
-  return [...custom, ...builtin.filter(b=>!custom.some(c=>c.label===b.label))];
+let learnCat='ready';
+function findSign(label){ return signs.find(s=>s.label===label) || baseSigns.find(s=>s.label===label); }
+function lesson(label){
+  const s = findSign(label), b = C.BUILTINS.find(x=>x.label===label);
+  if (s) return {label, desc:s.desc||'', thumb:s.thumb||'', emoji: LETTERS.has(label)?label:'🖐️', hands:s.hands||1, ready:true};
+  if (b) return {label, desc:b.desc, thumb:'', emoji:b.emoji, hands:1, ready:true};
+  return {label, desc:'', thumb:'', emoji: LETTERS.has(label)?label:'·', hands:1, ready:false};
 }
-function pic(l){ return l.thumb ? `<img alt="" src="${l.thumb}">` : l.emoji; }
+function readyLessons(){
+  const labels = new Set([...C.BUILTINS.map(b=>b.label), ...signs.map(s=>s.label), ...baseSigns.map(s=>s.label)]);
+  return [...labels].map(lesson);
+}
+function catItems(id){
+  if (id==='ready') return readyLessons();
+  if (id==='letters') return LIB.letters.map(lesson);
+  const c = LIB.cats.find(x=>x.id===id); return c ? c.items.map(lesson) : [];
+}
+function pic(l){ return l.thumb ? `<img alt="" src="${l.thumb}">` : esc(l.emoji); }
 function renderLearn(){
   $('learnPick').hidden=false; $('learnPractice').hidden=true; target=null;
+  const cats=[{id:'ready',name:'الجاهزة للتدريب'},{id:'letters',name:'الحروف'},...LIB.cats];
+  $('learnCats').innerHTML = cats.map(c=>`<button type="button" data-c="${c.id}" style="${c.id===learnCat?'background:var(--ink);color:var(--bg);border-color:var(--ink)':''}">${c.name}</button>`).join('');
+  $('learnCats').querySelectorAll('button').forEach(b=>b.onclick=()=>{ learnCat=b.dataset.c; renderLearn(); });
   const L=$('learnList'); L.innerHTML='';
-  allLessons().forEach(l=>{
+  const items = catItems(learnCat);
+  const done = items.filter(l=>l.ready).length;
+  const head=document.createElement('div'); head.className='lbl'; head.textContent = `${done} من ${items.length} جاهزة للتدريب`; L.appendChild(head);
+  items.forEach(l=>{
     const el=document.createElement('div'); el.className='item';
-    el.innerHTML=`<span class="thumb">${pic(l)}</span><div><b>${esc(l.label)}</b><small>${esc(l.desc|| (l.hands===2?'باليدين':''))}</small></div><button class="btn small">تدرّب</button>`;
-    el.querySelector('button').onclick=()=>{ quiz=false; startPractice(l); };
+    el.innerHTML=`<span class="thumb">${pic(l)}</span><div><b>${esc(l.label)}</b><small>${esc(l.ready ? (l.desc|| (l.hands===2?'باليدين':'')) : 'ما تسجّلت بعد. سجّلها من «أضف إشارة»')}</small></div>`+
+      (l.ready ? `<button class="btn small">تدرّب</button>` : `<button class="btn ghost small">سجّلها</button>`);
+    el.querySelector('button').onclick=()=>{ if (l.ready){ quiz=false; startPractice(l); } else { showTab('teach'); $('newLabel').value=l.label; $('newLabel').focus(); } };
     L.appendChild(el);
   });
   $('sOk').textContent=score.ok; $('sAll').textContent=score.all;
 }
+function allLessons(){ return readyLessons(); }
 function startPractice(l){
   target=l; hits=0; solved=false;
   $('learnPick').hidden=true; $('learnPractice').hidden=false;
@@ -607,7 +696,31 @@ function finishRecording(){
   save(); stab.reset();
   const total = signs.find(s=>s.label===r.label).samples.length;
   $('recInfo').textContent = `تم ✓ «${r.label}» (${hands===2?'باليدين':'بيد وحدة'}) فيها ${total} عينة. سجّل مرة ثانية من زاوية مختلفة لدقة أعلى.`;
+  if (wiz && wiz.waiting && wiz.list[wiz.i]===r.label){ wiz.waiting=false; wiz.i++; setTimeout(wizShow, 600); }
 }
+
+/* ---------- recording wizard (walks a whole category) ---------- */
+let wiz=null;
+$('wizCat').innerHTML = [{id:'letters',name:'الحروف'},...LIB.cats].map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+function wizShow(){
+  if (!wiz) return;
+  if (wiz.i >= wiz.list.length){ $('wizWord').textContent='خلصت القسم ✓'; $('wizPos').textContent=''; $('wizInfo').textContent='اختر قسم ثاني، أو روح لـ«تعلّم الإشارة» وجرّبها.'; $('wizRec').disabled=true; return; }
+  const w = wiz.list[wiz.i], s = findSign(w);
+  $('wizPos').textContent = `${wiz.i+1} من ${wiz.list.length}`;
+  $('wizWord').textContent = w;
+  $('wizPic').innerHTML = s && s.thumb ? `<img alt="" src="${s.thumb}">` : esc(LETTERS.has(w)?w:'🖐️');
+  $('wizInfo').textContent = s ? `مسجّلة (${s.samples.length} عينة). سجّل مرة ثانية لدقة أعلى، أو تخطّى.` : 'سوّ الإشارة بعد العد التنازلي.';
+  $('wizRec').disabled=false;
+}
+$('wizStart').onclick=()=>{
+  if (!running){ $('recInfo').textContent='شغّل الكاميرا أول.'; return; }
+  const id=$('wizCat').value;
+  const list = id==='letters' ? LIB.letters : LIB.cats.find(c=>c.id===id).items;
+  wiz={list:[...list], i:0}; $('wiz').hidden=false; wizShow();
+};
+$('wizRec').onclick=async()=>{ if(!wiz) return; $('newLabel').value=wiz.list[wiz.i]; $('newDesc').value=''; wiz.waiting=true; $('wizRec').disabled=true; await $('recBtn').onclick(); };
+$('wizSkip').onclick=()=>{ if(!wiz) return; wiz.i++; wizShow(); };
+$('wizStop').onclick=()=>{ wiz=null; $('wiz').hidden=true; };
 
 /* ---------- lists, import/export ---------- */
 function renderLists(){
@@ -649,6 +762,10 @@ $('importFile').onchange=async e=>{
   e.target.value='';
 };
 renderLists();
+// Shipped letters dataset (built from a published Arabic sign-alphabet dataset), if present next to this page.
+fetch('signs-base.json').then(r=>r.ok?r.json():null).then(d=>{
+  if (d && Array.isArray(d.signs)) baseSigns = d.signs.filter(s=>s && typeof s.label==='string' && Array.isArray(s.samples)).map(s=>({...s, base:true}));
+}).catch(()=>{});
 if (location.protocol==='file:') status('افتح الموقع من رابط (مثل GitHub Pages) عشان الكاميرا تشتغل.');
 </script>
 </body>
