@@ -7,7 +7,10 @@ from PIL import Image
 
 DATA = sys.argv[1]; OUT = sys.argv[2]
 MODEL = 'hand_landmarker.task'
-urllib.request.urlretrieve('https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task', MODEL)
+print('downloading model', flush=True)
+with urllib.request.urlopen('https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task', timeout=60) as r:
+    open(MODEL,'wb').write(r.read())
+print('model ok', os.path.getsize(MODEL), flush=True)
 NAMES = {'Alef':'ا','Beh':'ب','Teh':'ت','Theh':'ث','Jeem':'ج','Hah':'ح','Khah':'خ','Dal':'د','Thal':'ذ','Reh':'ر','Zain':'ز',
  'Seen':'س','Sheen':'ش','Sad':'ص','Dad':'ض','Tah':'ط','Zah':'ظ','Ain':'ع','Ghain':'غ','Feh':'ف','Qaf':'ق','Kaf':'ك','Lam':'ل',
  'Meem':'م','Noon':'ن','Heh':'ه','Waw':'و','Yeh':'ي','Teh_Marbuta':'ة','Al':'ال','Laa':'لام ألف'}
@@ -34,7 +37,7 @@ for cls, files in manifest.items():
     samples=[]; thumb=''
     for fn in files:
         path=os.path.join(DATA,'d',cls,fn)
-        img = mp.Image.create_from_file(path)
+        img = mp.Image(image_format=mp.ImageFormat.SRGB, data=__import__('numpy').asarray(Image.open(path).convert('RGB')))
         r = det.detect(img)
         if not r.hand_landmarks: continue
         handed = r.handedness[0][0].category_name
@@ -43,6 +46,7 @@ for cls, files in manifest.items():
             im=Image.open(path).convert('RGB'); im.thumbnail((180,180)); b=io.BytesIO(); im.save(b,'JPEG',quality=70)
             thumb='data:image/jpeg;base64,'+base64.b64encode(b.getvalue()).decode()
     report[label]=f'{len(samples)}/{len(files)}'
+    print(cls, label, report[label], flush=True)
     if samples: signs.append({'label':label,'desc':f'حرف «{label}» بلغة الإشارة العربية','thumb':thumb,'hands':1,'samples':samples})
 json.dump({'app':'ishara','v':2,'source':'RGB Arabic Alphabets Sign Language Dataset (Al-Barham et al., 2023), CC BY-NC-SA 4.0','signs':signs},
           open(OUT,'w',encoding='utf-8'), ensure_ascii=False, separators=(',',':'))
